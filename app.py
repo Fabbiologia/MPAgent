@@ -329,19 +329,50 @@ def main():
                 # Initialize extracted data
                 st.session_state.extracted_data = {"text": text}
                 
+                # Initialize extraction results
+                extraction_results = {
+                    "zonation": {"zonas": []},
+                    "objectives": {"objetivos_conservacion": []},
+                    "literature": {"referencias_bibliograficas": []}
+                }
+                
                 # Process each chunk
                 for i, chunk in enumerate(text_chunks):
                     status_text.text(f"Procesando fragmento {i+1} de {len(text_chunks)}...")
                     
-                    # Process the chunk (this is where you'd call your extraction functions)
-                    # For now, we'll just store the chunks
-                    if i == 0:  # Only process the first chunk for now to avoid rate limits
-                        extraction_results = extract_all(chunk, model_name=model_name)
-                        st.session_state.extracted_data.update(extraction_results)
+                    try:
+                        # Process the current chunk
+                        chunk_results = extract_all(chunk, model_name=model_name)
+                        
+                        # Merge results, avoiding duplicates
+                        if "zonation" in chunk_results and "zonas" in chunk_results["zonation"]:
+                            extraction_results["zonation"]["zonas"].extend(
+                                zone for zone in chunk_results["zonation"]["zonas"] 
+                                if zone not in extraction_results["zonation"]["zonas"]
+                            )
+                            
+                        if "objectives" in chunk_results and "objetivos_conservacion" in chunk_results["objectives"]:
+                            extraction_results["objectives"]["objetivos_conservacion"].extend(
+                                obj for obj in chunk_results["objectives"]["objetivos_conservacion"]
+                                if obj not in extraction_results["objectives"]["objetivos_conservacion"]
+                            )
+                            
+                        if "literature" in chunk_results and "referencias_bibliograficas" in chunk_results["literature"]:
+                            extraction_results["literature"]["referencias_bibliograficas"].extend(
+                                ref for ref in chunk_results["literature"]["referencias_bibliograficas"]
+                                if ref not in extraction_results["literature"]["referencias_bibliograficas"]
+                            )
+                            
+                    except Exception as e:
+                        st.warning(f"Advertencia en el fragmento {i+1}: {str(e)}")
+                        continue
                     
                     # Update progress
                     progress = (i + 1) / len(text_chunks)
                     progress_bar.progress(progress)
+                
+                # Store the combined results
+                st.session_state.extracted_data.update(extraction_results)
                 
                 st.success("✅ Extracción de información completada")
                 
