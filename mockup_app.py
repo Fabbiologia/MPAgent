@@ -758,11 +758,11 @@ def main():
                 st.session_state.analysis_complete = True
                 st.session_state.mock_data = mock_data
                 
-                # Show completion message
+                # Show completion message and set flag to show results
+                st.session_state.analysis_complete = True
                 st.success("✅ Analysis complete!")
-                
-                # Auto-scroll to results
-                st.experimental_rerun()
+                # Force a rerun to show results
+                st.rerun()
     
     # Display results if analysis is complete
     if st.session_state.get('analysis_complete', False):
