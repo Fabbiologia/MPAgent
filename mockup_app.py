@@ -1,7 +1,8 @@
 """
-MPAgent Mockup - Marine Protected Area Management Plan Analysis Tool
+MPAgent - Marine Protected Area Management Plan Analysis Tool
 
-This is a mockup version that simulates the complete analysis workflow for demonstration purposes.
+This application analyzes Marine Protected Area (MPA) management plans using AI-powered tools.
+Deploy on Streamlit Cloud with: streamlit run mockup_app.py
 """
 
 import streamlit as st
@@ -16,9 +17,55 @@ from pathlib import Path
 st.set_page_config(
     page_title="MPAgent - MPA Analysis Dashboard",
     page_icon="🌊",
-    layout="wide",
-    initial_sidebar_state="expanded"
+    layout="centered",
+    initial_sidebar_state="expanded",
+    menu_items={
+        'Get Help': 'https://github.com/Fabbiologia/MPAgent',
+        'Report a bug': 'https://github.com/Fabbiologia/MPAgent/issues',
+        'About': "# MPAgent\nAn AI-powered tool for analyzing Marine Protected Area management plans."
+    }
 )
+
+# Add responsive CSS
+st.markdown("""
+    <style>
+        @media (max-width: 768px) {
+            /* Adjust font sizes for mobile */
+            .stApp h1 { font-size: 1.8rem !important; }
+            .stApp h2 { font-size: 1.5rem !important; }
+            .stApp h3 { font-size: 1.3rem !important; }
+            .stApp h4 { font-size: 1.1rem !important; }
+            
+            /* Make tables and dataframes responsive */
+            .stDataFrame {
+                width: 100% !important;
+                display: block;
+                overflow-x: auto;
+            }
+            
+            /* Adjust padding and margins */
+            .main .block-container {
+                padding: 1rem 1rem 5rem;
+            }
+            
+            /* Make columns stack on mobile */
+            .st-cf {
+                flex-direction: column;
+            }
+            
+            /* Adjust spacing in columns */
+            .st-cf > div {
+                width: 100% !important;
+                margin-bottom: 1rem;
+            }
+            
+            /* Make buttons full width on mobile */
+            .stButton > button {
+                width: 100%;
+            }
+        }
+    </style>
+    """, unsafe_allow_html=True)
 
 # Custom CSS for better styling
 st.markdown("""
@@ -539,18 +586,27 @@ def display_objectives_results(objectives_data, smart_results):
             st.markdown("#### SMART Assessment")
             smart = obj['smart_analysis']
             
-            # Create a 5-column layout for SMART criteria
-            cols = st.columns(5)
+            # Create a clean layout for SMART criteria
             criteria = ["specific", "measurable", "achievable", "relevant", "time_bound"]
             
-            for idx, criterion in enumerate(criteria):
-                with cols[idx]:
-                    score = smart[criterion]
-                    if isinstance(score, str):
-                        score_text = score.split(" - ")[0] if " - " in score else score
-                        # Display criteria with better visual hierarchy and no background
-                        st.markdown(f"**{criterion.upper()}**")
-                        st.markdown(f"<div style='text-align:center; padding:5px; border:1px solid #e0e0e0; border-radius:4px;'>{score_text}</div>", unsafe_allow_html=True)
+            # Display criteria in a compact format
+            for criterion in criteria:
+                score = smart[criterion]
+                if isinstance(score, str):
+                    score_text = score.split(" - ")[0] if " - " in score else score
+                    details = smart[criterion].split(" - ")[1] if " - " in smart[criterion] else ""
+                    
+                    # Create a clean container for each criterion
+                    st.markdown(
+                        f"""
+                        <div style='margin-bottom: 10px; padding: 8px; border-left: 4px solid #4CAF50; background-color: #f8f9fa;'>
+                            <div style='font-weight: bold;'>{criterion.upper()}</div>
+                            <div>{score_text}</div>
+                            <div style='font-size: 0.85em; color: #666;'>{details}</div>
+                        </div>
+                        """,
+                        unsafe_allow_html=True
+                    )
                     
             # Display detailed analysis and recommendations
             st.markdown("#### Detailed Analysis")
@@ -627,21 +683,21 @@ def display_literature_review(lit_data):
         for finding in themes["Socioeconomic Aspects"]:
             st.markdown(f"- {finding}")
     
-    # Congruence analysis in columns
+    # Congruence analysis - stacked on mobile, side by side on larger screens
     st.markdown("### Scientific Congruence Analysis")
     
-    col1, col2 = st.columns(2)
+    # Use columns with responsive behavior
+    col1, col2 = st.columns([1, 1])
+    
     with col1:
-        st.markdown("#### Strengths in Current Plan")
-        for strength in lit_data["congruence_analysis"]["strengths"]:
-            st.markdown(f"<div style='padding:8px; border-left: 3px solid #4caf50; margin-bottom:8px;'>"
-                       f"✓ {strength}</div>", unsafe_allow_html=True)
+        with st.expander("✅ Strengths", expanded=True):
+            for strength in lit_data["congruence_analysis"]["strengths"]:
+                st.markdown(f"• {strength}")
     
     with col2:
-        st.markdown("#### Areas for Improvement")
-        for gap in lit_data["congruence_analysis"]["gaps"]:
-            st.markdown(f"<div style='padding:8px; border-left: 3px solid #ff9800; margin-bottom:8px;'>"
-                       f"⚠️ {gap}</div>", unsafe_allow_html=True)
+        with st.expander("⚠️ Areas for Improvement", expanded=True):
+            for gap in lit_data["congruence_analysis"]["gaps"]:
+                st.markdown(f"• {gap}")
     
     # Recommendations section
     if "recommendations" in lit_data["congruence_analysis"] and lit_data["congruence_analysis"]["recommendations"]:

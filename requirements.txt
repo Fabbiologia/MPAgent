@@ -1,8 +1,19 @@
-PyMuPDF==1.22.5
-langchain==0.0.267
-openai==0.27.8
-streamlit==1.25.0
-python-dotenv==1.0.0
-pandas==2.0.3
-numpy==1.24.3
-fpdf2==2.7.6
+# Core dependencies
+streamlit>=1.25.0,<2.0.0
+pandas>=1.5.0,<3.0.0
+numpy>=1.24.0,<2.0.0
+
+# PDF Generation
+fpdf2>=2.7.6,<3.0.0
+
+# For the mockup (not needed in production but included for completeness)
+PyMuPDF>=1.22.5,<2.0.0
+
+# Development dependencies (commented out by default)
+# python-dotenv>=1.0.0,<2.0.0
+# langchain>=0.0.267,<1.0.0
+# openai>=0.27.8,<1.0.0
+
+# Required for Streamlit deployment
+protobuf>=3.20.0,<5.0.0  # Required for Streamlit Cloud
+
