@@ -522,7 +522,7 @@ def display_zonation_analysis(zones):
     try:
         st.image("static/images/revillagigedo_map.png", 
                 caption="Spatial representation of Revillagigedo Archipelago management zones",
-                use_column_width=True)
+                use_container_width=True)
     except Exception as e:
         st.warning("Could not load the zonation map. Using placeholder instead.")
         st.image("https://via.placeholder.com/800x400?text=Zonation+Map+Visualization", 
@@ -811,13 +811,7 @@ def main():
             st.markdown("---")
             display_mpa_guide_assessment(mock_data["mpa_guide_assessment"])
         
-        # Add download button for report
-        st.download_button(
-            label="📥 Download Full Report (PDF)",
-            data=generate_mock_pdf(mock_data),
-            file_name=f"MPA_Analysis_Report_{datetime.now().strftime('%Y%m%d')}.pdf",
-            mime="application/pdf"
-        )
+        # Download button removed as per user request
 
 def generate_mock_pdf(data):
     """Generate a mock PDF report (returns a placeholder in this mockup)."""
