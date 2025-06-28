@@ -520,13 +520,48 @@ def display_zonation_analysis(zones):
     # Display the map at the top of the section
     st.markdown("#### Zonation Map")
     try:
-        st.image("static/images/revillagigedo_map.png", 
-                caption="Spatial representation of Revillagigedo Archipelago management zones",
-                use_container_width=True)
+        # Using base64 encoding which is a reliable way to include images in Streamlit
+        import base64
+        from pathlib import Path
+        
+        # Function to get base64 encoded image
+        def img_to_base64(img_path):
+            with open(img_path, "rb") as img_file:
+                return base64.b64encode(img_file.read()).decode('utf-8')
+        
+        # Try multiple possible paths to find the image
+        possible_paths = [
+            Path(__file__).parent / "static" / "images" / "revillagigedo_map.png",  # Original path
+            Path(__file__).parent / "revillagigedo_map.png",                        # Root directory path
+            Path("revillagigedo_map.png"),                                         # Relative path
+            Path("/home/aburtolab/R/MPAgent/static/images/revillagigedo_map.png"),  # Absolute path
+            Path("/home/aburtolab/R/MPAgent/revillagigedo_map.png")                # Absolute root path
+        ]
+        
+        # Try to find the image in any of the possible locations
+        img_path = None
+        for path in possible_paths:
+            if path.exists():
+                img_path = path
+                break
+        
+        if img_path:
+            # Display image using HTML and base64 encoding
+            img_base64 = img_to_base64(img_path)
+            html = f'''
+            <div style="text-align: center;">
+                <img src="data:image/png;base64,{img_base64}" style="width: 100%;" alt="Revillagigedo Map">
+                <p style="font-style: italic; color: #666;">Spatial representation of Revillagigedo Archipelago management zones</p>
+            </div>
+            '''
+            st.markdown(html, unsafe_allow_html=True)
+        else:
+            st.warning("Could not find the map file in any of the expected locations.")
+            st.image("https://via.placeholder.com/800x400?text=Zonation+Map+Visualization", 
+                caption="Spatial representation of management zones")
     except Exception as e:
         st.warning("Could not load the zonation map. Using placeholder instead.")
-        st.image("https://via.placeholder.com/800x400?text=Zonation+Map+Visualization", 
-                caption="Spatial representation of management zones")
+        st.image("https://via.placeholder.com/800x400?text=Zonation+Map+Visualization", caption="Spatial representation of management zones")
     
     st.markdown("### Zone Details")
     
@@ -553,15 +588,15 @@ def display_objectives_results(objectives_data, smart_results):
     # Create a visual indicator for the overall score
     score_color = "#4CAF50" if avg_score >= 3.5 else "#FFC107" if avg_score >= 2.5 else "#F44336"
     st.markdown(f"""
-    <div style='background-color:#f5f5f5; padding:20px; border-radius:10px; margin-bottom:20px;'>
-        <h3 style='margin-top:0;'>Overall Objectives Assessment</h3>
+    <div style='background-color:#1E1E1E; padding:20px; border-radius:10px; margin-bottom:20px; border:1px solid #333;'>
+        <h3 style='margin-top:0; color:#E0E0E0;'>Overall Objectives Assessment</h3>
         <div style='display:flex; align-items:center;'>
             <div style='font-size:36px; font-weight:bold; color:{score_color}; margin-right:20px;'>
                 {avg_score:.1f}/5.0
             </div>
             <div>
-                <div style='font-size:14px; color:#666;'>SMART Score</div>
-                <div style='font-size:12px; color:#999;'>{len(objectives_data)} objectives analyzed</div>
+                <div style='font-size:14px; color:#BDBDBD;'>SMART Score</div>
+                <div style='font-size:12px; color:#9E9E9E;'>{len(objectives_data)} objectives analyzed</div>
             </div>
         </div>
     </div>
@@ -599,10 +634,10 @@ def display_objectives_results(objectives_data, smart_results):
                     # Create a clean container for each criterion
                     st.markdown(
                         f"""
-                        <div style='margin-bottom: 10px; padding: 8px; border-left: 4px solid #4CAF50; background-color: #f8f9fa;'>
-                            <div style='font-weight: bold;'>{criterion.upper()}</div>
-                            <div>{score_text}</div>
-                            <div style='font-size: 0.85em; color: #666;'>{details}</div>
+                        <div style='margin-bottom: 10px; padding: 8px; border-left: 4px solid #4CAF50; background-color: #1E1E1E; border: 1px solid #333;'>
+                            <div style='font-weight: bold; color: #E0E0E0;'>{criterion.upper()}</div>
+                            <div style='color: #BDBDBD;'>{score_text}</div>
+                            <div style='font-size: 0.85em; color: #9E9E9E;'>{details}</div>
                         </div>
                         """,
                         unsafe_allow_html=True
@@ -610,7 +645,6 @@ def display_objectives_results(objectives_data, smart_results):
                     
             # Display detailed analysis and recommendations
             st.markdown("#### Detailed Analysis")
-            st.markdown("")
             
             # Create two columns for analysis and recommendations
             col1, col2 = st.columns([2, 1])
@@ -762,7 +796,7 @@ def main():
                 st.session_state.analysis_complete = True
                 st.success("✅ Analysis complete!")
                 # Force a rerun to show results
-                st.rerun()
+                st.experimental_rerun()
     
     # Display results if analysis is complete
     if st.session_state.get('analysis_complete', False):
@@ -778,8 +812,11 @@ def main():
         
         with tab1:
             st.markdown("## Analysis Overview")
+            
+            # Document Information
             display_document_info(mock_data)
             
+            # Executive Summary with clearer presentation
             st.markdown("### Executive Summary")
             st.markdown("""
             This analysis of the Revillagigedo MPA management plan reveals a well-structured framework 
@@ -788,17 +825,36 @@ def main():
             opportunities to enhance climate change resilience and community engagement.
             """)
             
-            # Key metrics
-            st.markdown("### Key Metrics")
-            col1, col2, col3, col4 = st.columns(4)
+            # MPA Guide Assessment with integrated metrics
+            st.markdown("### MPA Guide Assessment & Key Metrics")
+            
+            # First row of metrics
+            col1, col2 = st.columns(2)
             with col1:
                 st.metric("Protection Level", mock_data["mpa_guide_assessment"]["protection_level"])
+                st.metric("Compliance Score", f"{mock_data['mpa_guide_assessment']['compliance_score']*100:.1f}%")
             with col2:
-                st.metric("SMART Score", f"{sum(obj['score'] for obj in mock_data['objectives'])/len(mock_data['objectives']):.1f}/5.0")
-            with col3:
-                st.metric("Literature Congruence", f"{mock_data['literature_review']['congruence_analysis']['score']*100:.0f}%")
-            with col4:
+                st.metric("Effectiveness Rating", mock_data["mpa_guide_assessment"]["effectiveness_rating"])
                 st.metric("Zones Defined", len(mock_data["zones"]))
+            
+            # Second row of metrics
+            col1, col2 = st.columns(2)
+            with col1:
+                st.metric("SMART Score", f"{sum(obj['score'] for obj in mock_data['objectives'])/len(mock_data['objectives']):.1f}/5.0")
+            with col2:
+                st.metric("Literature Congruence", f"{mock_data['literature_review']['congruence_analysis']['score']*100:.0f}%")
+            
+            # Strengths and Areas for Improvement
+            col1, col2 = st.columns(2)
+            with col1:
+                st.markdown("#### Key Strengths")
+                for strength in mock_data["mpa_guide_assessment"]["key_strengths"]:
+                    st.markdown(f"- ✓ {strength}")
+            
+            with col2:
+                st.markdown("#### Areas for Improvement")
+                for area in mock_data["mpa_guide_assessment"]["areas_for_improvement"]:
+                    st.markdown(f"- ✗ {area}")
         
         with tab2:
             display_zonation_analysis(mock_data["zones"])
@@ -808,8 +864,6 @@ def main():
         
         with tab4:
             display_literature_review(mock_data["literature_review"])
-            st.markdown("---")
-            display_mpa_guide_assessment(mock_data["mpa_guide_assessment"])
         
         # Download button removed as per user request
 
